@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="br.com.up.carrosup" >
+    package="br.com.up.carrosup">
 
     <uses-permission android:name="android.permission.INTERNET" />
 
@@ -8,11 +8,24 @@
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
-        android:theme="@style/AppTheme" >
+        android:theme="@style/AppTheme">
+
+        <!-- Google Play Services -->
+        <meta-data
+            android:name="com.google.android.gms.version"
+            android:value="@integer/google_play_services_version" />
+        <!--
+        API Key dos Mapas (Coloque a sua aqui)
+         https://console.developers.google.com
+         -->
+        <meta-data
+            android:name="com.google.android.maps.v2.API_KEY"
+            android:value="AIzaSyDRUAJw31KDYAL1IS-Ih9L8nV2gw_oNC0Q" />
+
         <activity
             android:name=".activity.MainActivity"
             android:label="@string/app_name"
-            android:theme="@style/NavDrawerTheme" >
+            android:theme="@style/NavDrawerTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -22,7 +35,7 @@
         <activity
             android:name=".activity.CarroActivity"
             android:label="@string/title_activity_carro"
-            android:parentActivityName=".activity.MainActivity" >
+            android:parentActivityName=".activity.MainActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="br.com.up.carrosup.activity.MainActivity" />
@@ -30,11 +43,10 @@
         <activity
             android:name=".activity.SobreActivity"
             android:label="@string/title_activity_sobre"
-            android:parentActivityName=".activity.MainActivity" >
+            android:parentActivityName=".activity.MainActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="br.com.up.carrosup.activity.MainActivity" />
         </activity>
     </application>
-
 </manifest>
