@@ -1,0 +1,46 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".MainActivity">
+
+    <include layout="@layout/include_toolbar" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <TextView
+                android:id="@+id/tNome"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                tools:text="@string/nome" />
+
+            <ImageView
+                android:id="@+id/img"
+                android:layout_width="@dimen/img_carro_width"
+                android:layout_height="@dimen/img_carro_height"
+                tools:src="@drawable/ferrari_ff"
+                android:layout_gravity="center_horizontal"/>
+
+            <TextView
+                android:id="@+id/tDesc"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:ellipsize="end"
+                android:textSize="16sp"
+                tools:text="@string/descricao" />
+
+        </LinearLayout>
+
+    </ScrollView>
+
+</LinearLayout>
