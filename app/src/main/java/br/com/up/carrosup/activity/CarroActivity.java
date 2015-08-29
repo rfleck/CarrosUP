@@ -16,6 +16,7 @@ import java.io.File;
 
 import br.com.up.carrosup.R;
 import br.com.up.carrosup.domain.Carro;
+import br.com.up.carrosup.fragment.CarroEditFragment;
 import br.com.up.carrosup.fragment.CarroFragment;
 import br.com.up.carrosup.utils.ImageUtils;
 
@@ -23,6 +24,18 @@ public class CarroActivity extends BaseActivity {
     CollapsingToolbarLayout collapsingToolbar;
     private Carro carro;
     private ImageView appBarImg;
+
+    // Delegate para eventos de clique na imagem da appbar
+    private ClickHeaderListener clickHeaderListener;
+
+    public interface ClickHeaderListener{
+        void onHeaderClicked();
+
+    }
+
+    public void setClickHeaderListener(ClickHeaderListener clickHeaderListener) {
+        this.clickHeaderListener = clickHeaderListener;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,8 +47,11 @@ public class CarroActivity extends BaseActivity {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
         // Título da CollapsingToolbarLayout
-        collapsingToolbar = (CollapsingToolbarLayout) findViewById(R.id.collapsing_toolbar); // Header
+        collapsingToolbar = (CollapsingToolbarLayout) findViewById(R.id.collapsing_toolbar);
+        // Header
         appBarImg = (ImageView) findViewById(R.id.appBarImg);
+        appBarImg.setOnClickListener(onClickImgHeader());
+
         Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.header_appbar); // Palleta cores
         Palette.from(bitmap).generate(new Palette.PaletteAsyncListener() {
             @Override
@@ -44,10 +60,14 @@ public class CarroActivity extends BaseActivity {
                 collapsingToolbar.setContentScrimColor(mutedColor);
             }
         });
+
         // Carro dos argumentos
-        this.carro = Parcels.unwrap(getIntent().getExtras().getParcelable("carro")); // Mostra as informações do carro no header (foto)
+        this.carro = Parcels.unwrap(getIntent().getExtras().getParcelable("carro"));
+        final boolean editMode = getIntent().getBooleanExtra("editMode", false);
+
+        // Mostra as informações do carro no header (foto)
         setAppBarInfo(carro);
-// FAB
+        // FAB
         FloatingActionButton fabButton = (FloatingActionButton) findViewById(R.id.fab);
         fabButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -57,10 +77,23 @@ public class CarroActivity extends BaseActivity {
         });
         // Adiciona o Fragment com os detalhes carro
         if (savedInstanceState == null) {
-            CarroFragment frag = new CarroFragment();
+            //CarroFragment frag = new CarroFragment();
+            CarroFragment frag = editMode ? new CarroEditFragment() : new CarroFragment();
             frag.setArguments(getIntent().getExtras());
             getSupportFragmentManager().beginTransaction().replace(R.id.layoutFrag, frag, "frag").commit();
         }
+    }
+
+    private View.OnClickListener onClickImgHeader() {
+        return new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (clickHeaderListener != null) {
+                // Delegate para notificar o fragment que teve clique.
+                    clickHeaderListener.onHeaderClicked();
+                }
+            }
+        };
     }
 
     public void setAppBarInfo(Carro c) {
@@ -81,5 +114,11 @@ public class CarroActivity extends BaseActivity {
 
     public void setImage(File file) {
         ImageUtils.setImage(this, file, appBarImg);
+    }
+
+    public void setImage(Bitmap bitmap) {
+        if(bitmap != null) {
+            appBarImg.setImageBitmap(bitmap);
+        }
     }
 }

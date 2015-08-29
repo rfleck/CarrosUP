@@ -1,7 +1,13 @@
 package br.com.up.carrosup.fragment;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.ActivityOptionsCompat;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.URLUtil;
@@ -40,6 +46,7 @@ public class CarroFragment extends BaseFragment implements OnMapReadyCallback {
         super.onCreate(savedInstanceState);
         // Recebe o carro por parâmetro
         carro = Parcels.unwrap(getArguments().getParcelable("carro"));
+        setHasOptionsMenu(true);
     }
 
     @Override
@@ -119,5 +126,26 @@ public class CarroFragment extends BaseFragment implements OnMapReadyCallback {
         } else {
             toast(getString(R.string.msg_carro_sem_video));
         }
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.menu_frag_carro, menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        if (id == R.id.action_edit) {
+            Intent intent = new Intent(getActivity(), CarroActivity.class);
+            intent.putExtra("carro", Parcels.wrap(carro));
+            intent.putExtra("editMode", true);
+            ActivityOptionsCompat opts = ActivityOptionsCompat.makeSceneTransitionAnimation(getActivity());
+            ActivityCompat.startActivity(getActivity(), intent, opts.toBundle());
+            // Por definição, vamos fechar esta tela para ficar somente a de editar.
+            getActivity().finish();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 }

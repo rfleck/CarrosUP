@@ -2,7 +2,7 @@ package br.com.up.carrosup.domain;
 
 @org.parceler.Parcel
 public class Carro {
-    public long id; // Altere o id para long primitivo, vamos precisar depois.
+    public Long id; // Altere o id para long primitivo, vamos precisar depois.
     public String tipo;
     public String nome;
     public String desc;

@@ -1,10 +1,14 @@
 package br.com.up.carrosup.fragment;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.ActivityOptionsCompat;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.view.ActionMode;
 import android.support.v7.widget.DefaultItemAnimator;
@@ -30,11 +34,13 @@ import br.com.up.carrosup.domain.Carro;
 import br.com.up.carrosup.domain.CarroDB;
 import br.com.up.carrosup.domain.CarroService;
 import br.com.up.carrosup.fragment.adapter.CarroAdapter;
+import br.com.up.carrosup.utils.BroadcastUtil;
 import livroandroid.lib.fragment.BaseFragment;
 
 /**
  * Created by ricardo on 12/06/15.
  */
+
 public class CarrosFragment extends BaseFragment {
     private RecyclerView recyclerView;
     private List<Carro> carros;
@@ -42,12 +48,29 @@ public class CarrosFragment extends BaseFragment {
     private SwipeRefreshLayout swipeLayout; // Action Bar de Contexto
     private ActionMode actionMode;
 
+
+    private BroadcastReceiver receiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, final Intent intent) {
+            String action = intent.getAction();
+            if (BroadcastUtil.ACTION_CARRO_SALVO.equals(action)) {
+                // Ao receber o broadcast, recarrega a lista.
+                listaCarros(false);
+            }
+        }
+    };
+
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
             this.tipo = getArguments().getString("tipo");
         }
+
+        // Registra receiver para receber broadcasts
+        LocalBroadcastManager.getInstance(getContext()).registerReceiver(receiver, new IntentFilter(BroadcastUtil.ACTION_CARRO_SALVO));
+
         // Para inflar itens de menu na toolbar
         setHasOptionsMenu(true);
     }
@@ -55,7 +78,7 @@ public class CarrosFragment extends BaseFragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_carros, container, false);
-// Lista
+        // Lista
         recyclerView = (RecyclerView) view.findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         recyclerView.setItemAnimator(new DefaultItemAnimator());
@@ -64,11 +87,14 @@ public class CarrosFragment extends BaseFragment {
         swipeLayout.setOnRefreshListener(OnRefreshListener());
         swipeLayout.setColorSchemeResources(
                 R.color.refresh_progress_1, R.color.refresh_progress_2, R.color.refresh_progress_3);
-// FAB
+        // FAB
         view.findViewById(R.id.fabAddCarro).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                snack(recyclerView, "Depois vamos adicionar um carro.");
+                // Adicionar um carro
+                Intent intent = new Intent(getActivity(), CarroActivity.class);
+                intent.putExtra("editMode", true);
+                ActivityCompat.startActivity(getActivity(), intent, null);
             }
         });
         return view;
@@ -80,13 +106,22 @@ public class CarrosFragment extends BaseFragment {
         listaCarros(false);
     }
 
-    private void listaCarros(boolean refresh) {
-        try {
-            carros = CarroService.getCarros(getContext(), tipo);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        recyclerView.setAdapter(new CarroAdapter(getContext(), carros, onClickCarro()));
+    private void listaCarros(final boolean refresh) {
+        startTask("carros", new BaseTask<Object>() {
+            @Override
+            public Object execute() throws Exception {
+                // Código em background aqui
+                carros = CarroService.getCarros(getContext(), tipo);
+                return null;
+            }
+
+            @Override
+            public void updateView(Object response) {
+                super.updateView(response);
+                // O código que atualiza a interface precisa executar na UI Thread
+                recyclerView.setAdapter(new CarroAdapter(getContext(), carros, onClickCarro()));
+            }
+        }, R.id.progress);
     }
 
     protected CarroAdapter.CarroOnClickListener onClickCarro() {
@@ -173,20 +208,32 @@ public class CarrosFragment extends BaseFragment {
 
     // Deletar carros selecionados ao abrir a CAB
     private void deletarCarrosSelecionados() {
-        List<Carro> selectedCarros = getSelectedCarros();
+        final List<Carro> selectedCarros = getSelectedCarros();
         if (selectedCarros.size() > 0) {
-            // Deleta os carros do banco
-            CarroDB db = new CarroDB(getContext());
-            try {
-                for (Carro c : selectedCarros) {
-                    db.delete(c);
-                    carros.remove(c);
+            startTask("deletar", new BaseTask() {
+                @Override
+                public Object execute() throws Exception {
+                    boolean ok = CarroService.delete(getContext(), selectedCarros);
+                    if (ok) {
+                        // Se excluiu do banco, remove da lista da tela.
+                        for (Carro c : selectedCarros) {
+                            carros.remove(c);
+                        }
+                    }
+                    return null;
                 }
-            } finally {
-                db.close();
-            }
-            // Mostra mensagem de sucesso
-            snack(recyclerView, selectedCarros.size() + " carros excluídos com sucesso");
+
+                @Override
+                public void updateView(Object count) {
+                    super.updateView(count);
+                    // Mostra mensagem de sucesso
+                    snack(recyclerView, selectedCarros.size() + " carros excluídos com sucesso");
+                    // Busca novamente no web service
+                    //listaCarros(true);
+                    // Atualiza o adapter da lista (faz usar o novo array)
+                    recyclerView.getAdapter().notifyDataSetChanged();
+                }
+            });
         }
     }
 
@@ -212,4 +259,12 @@ public class CarrosFragment extends BaseFragment {
             }
         }
     }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        // Cancela o recebimento de mensagens
+        LocalBroadcastManager.getInstance(getContext()).unregisterReceiver(receiver);
+    }
+
 }
