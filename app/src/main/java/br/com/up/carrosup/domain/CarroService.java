@@ -115,4 +115,12 @@ public class CarroService {
         Log.d(TAG, "ResponseWithURL: " + response);
         return response;
     }
+
+    public static List<Carro> seachByNome(Context context, String nome) throws IOException {
+        String url = URL_BASE + "/nome/" + nome;
+        HttpHelper http = new HttpHelper();
+        String json = http.doGet(url);
+        List<Carro> carros = parserJSON(context, json);
+        return carros;
+    }
 }

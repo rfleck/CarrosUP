@@ -9,11 +9,13 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.content.LocalBroadcastManager;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.view.ActionMode;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.SearchView;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -36,6 +38,7 @@ import br.com.up.carrosup.domain.CarroService;
 import br.com.up.carrosup.fragment.adapter.CarroAdapter;
 import br.com.up.carrosup.utils.BroadcastUtil;
 import livroandroid.lib.fragment.BaseFragment;
+import livroandroid.lib.utils.AndroidUtils;
 
 /**
  * Created by ricardo on 12/06/15.
@@ -267,4 +270,51 @@ public class CarrosFragment extends BaseFragment {
         LocalBroadcastManager.getInstance(getContext()).unregisterReceiver(receiver);
     }
 
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.menu_frag_carros, menu);
+
+        // SearchView
+        MenuItem item = menu.findItem(R.id.action_search);
+        SearchView searchView = (SearchView) MenuItemCompat.getActionView(item);
+        searchView.setOnQueryTextListener(onSearch());
+    }
+
+    private SearchView.OnQueryTextListener onSearch() {
+        return new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                buscaCarros(query);
+                return true;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                return false;
+            }
+        };
+    }
+
+    private void buscaCarros(final String nome) {
+        // Atualiza ao fazer o gesto Swipe To Refresh
+        if (AndroidUtils.isNetworkAvailable(getContext())) {
+            startTask("carros", new BaseTask<Object>() {
+                @Override
+                public Object execute() throws Exception {
+                    // Código em background aqui
+                    carros = CarroService.seachByNome(getContext(), nome);
+                    return null;
+                }
+
+                @Override
+                public void updateView(Object response) {
+                    super.updateView(response);
+                    // O código que atualiza a interface precisa executar na UI Thread
+                    recyclerView.setAdapter(new CarroAdapter(getContext(), carros, onClickCarro()));
+                }
+            }, R.id.progress);
+        } else {
+            alert(R.string.msg_error_conexao_indisponivel);
+        }
+    }
 }
