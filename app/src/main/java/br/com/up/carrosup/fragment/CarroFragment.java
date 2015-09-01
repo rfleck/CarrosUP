@@ -75,15 +75,19 @@ public class CarroFragment extends BaseFragment implements OnMapReadyCallback {
         if (carro != null && map != null) {
             // Ativa o botão para mostrar minha localização
             map.setMyLocationEnabled(true);
+
             // Cria o objeto LatLng com a coordenada da  fábrica
             double lat = carro.getLatitude();
             double lng = carro.getLongitude();
             if (lat > 0 && lng > 0) {
                 LatLng location = new LatLng(lat, lng);
+
                 // Posiciona o mapa na coordenada da fábrica (zoom = 13)
                 CameraUpdate update = CameraUpdateFactory.newLatLngZoom(location, 13);
+
                 //map.moveCamera(update);
                 map.animateCamera(update, 2000, null);
+
                 // Marcador no local da fábrica
                 map.addMarker(new MarkerOptions()
                         .title(carro.nome).snippet(carro.desc).position(location));
@@ -142,6 +146,7 @@ public class CarroFragment extends BaseFragment implements OnMapReadyCallback {
             intent.putExtra("editMode", true);
             ActivityOptionsCompat opts = ActivityOptionsCompat.makeSceneTransitionAnimation(getActivity());
             ActivityCompat.startActivity(getActivity(), intent, opts.toBundle());
+
             // Por definição, vamos fechar esta tela para ficar somente a de editar.
             getActivity().finish();
             return true;

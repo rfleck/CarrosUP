@@ -6,6 +6,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
+import android.view.View;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,7 +36,6 @@ public class CarroDB extends SQLiteOpenHelper {
         if (oldVersion == 1 && newVersion == 2) {
             // Execute o script para atualizar a versão...
         }
-
     }
 
     // Insere um novo carro, ou atualiza se já existe.
@@ -55,6 +55,7 @@ public class CarroDB extends SQLiteOpenHelper {
             if (id != 0) {
                 String _id = String.valueOf(carro.id);
                 String[] whereArgs = new String[]{_id};
+
                 // update carro set values = ... where _id=?
                 int count = db.update("carro", values, "_id=?", whereArgs);
                 return count;
@@ -155,6 +156,21 @@ public class CarroDB extends SQLiteOpenHelper {
         SQLiteDatabase db = getWritableDatabase();
         try {
             db.execSQL(sql, args);
+        } finally {
+            db.close();
+        }
+    }
+
+    public int findCarroByNameAndType(String nome, String tipo) {
+        String query = "SELECT COUNT(*) FROM CARRO WHERE NOME = \"" + nome + "\" AND TIPO = \"" + tipo + "\"";
+        int count = 0;
+
+        SQLiteDatabase db = getReadableDatabase();
+        try {
+            Cursor cursor = db.rawQuery(query, null);
+            count = cursor.getCount();
+            cursor.close();
+            return count;
         } finally {
             db.close();
         }

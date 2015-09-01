@@ -27,8 +27,10 @@ public class TabsAdapter extends android.support.v4.app.FragmentPagerAdapter {
             return context.getString(R.string.classicos);
         } else if (position == 1) {
             return context.getString(R.string.esportivos);
+        } else if (position == 2) {
+            return context.getString(R.string.luxo);
         }
-        return context.getString(R.string.luxo);
+        return context.getString(R.string.favoritos);
     }
 
     @Override
@@ -38,8 +40,11 @@ public class TabsAdapter extends android.support.v4.app.FragmentPagerAdapter {
             args.putString("tipo", "classicos");
         } else if (position == 1) {
             args.putString("tipo", "esportivos");
-        } else {
+        } else if (position == 2) {
             args.putString("tipo", "luxo");
+        }
+        else {
+            args.putString("tipo", "favoritos");
         }
         Fragment f = new CarrosFragment();
         f.setArguments(args);

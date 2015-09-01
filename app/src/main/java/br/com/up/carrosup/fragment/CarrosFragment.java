@@ -88,8 +88,7 @@ public class CarrosFragment extends BaseFragment {
         // Swipe to Refresh
         swipeLayout = (SwipeRefreshLayout) view.findViewById(R.id.swipeToRefresh);
         swipeLayout.setOnRefreshListener(OnRefreshListener());
-        swipeLayout.setColorSchemeResources(
-                R.color.refresh_progress_1, R.color.refresh_progress_2, R.color.refresh_progress_3);
+        swipeLayout.setColorSchemeResources(R.color.refresh_progress_1, R.color.refresh_progress_2, R.color.refresh_progress_3);
         // FAB
         view.findViewById(R.id.fabAddCarro).setOnClickListener(new View.OnClickListener() {
             @Override

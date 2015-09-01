@@ -7,6 +7,7 @@ import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.graphics.Palette;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 
@@ -16,6 +17,7 @@ import java.io.File;
 
 import br.com.up.carrosup.R;
 import br.com.up.carrosup.domain.Carro;
+import br.com.up.carrosup.domain.CarroDB;
 import br.com.up.carrosup.fragment.CarroEditFragment;
 import br.com.up.carrosup.fragment.CarroFragment;
 import br.com.up.carrosup.utils.ImageUtils;
@@ -46,13 +48,17 @@ public class CarroActivity extends BaseActivity {
             setSupportActionBar(toolbar);
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
+
         // Título da CollapsingToolbarLayout
         collapsingToolbar = (CollapsingToolbarLayout) findViewById(R.id.collapsing_toolbar);
+
         // Header
         appBarImg = (ImageView) findViewById(R.id.appBarImg);
         appBarImg.setOnClickListener(onClickImgHeader());
 
-        Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.header_appbar); // Palleta cores
+        Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.header_appbar);
+
+        // Palleta cores
         Palette.from(bitmap).generate(new Palette.PaletteAsyncListener() {
             @Override
             public void onGenerated(Palette palette) {
@@ -67,14 +73,40 @@ public class CarroActivity extends BaseActivity {
 
         // Mostra as informações do carro no header (foto)
         setAppBarInfo(carro);
+
         // FAB
         FloatingActionButton fabButton = (FloatingActionButton) findViewById(R.id.fab);
         fabButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                toast("Você pode favoritar esse carro...");
+                CarroDB db = new CarroDB(getContext());
+                Carro carroFav = carro;
+                carroFav.tipo = "favoritos";
+                int qtyCarros = 0;
+
+                toast("Carro: " + carroFav.nome.toString() + " Tipo: " + carroFav.tipo.toString());
+                try {
+                    qtyCarros = db.findCarroByNameAndType(carroFav.nome.toString(), carroFav.tipo.toString());
+                    toast("Carros encontrados no Banco: " + qtyCarros);
+                    if (qtyCarros > 0){
+                        // remove favorito
+                        db.delete(carroFav);
+                        toast("Removendo dos favoritos...");
+                    } else {
+                        // adiciona favorito
+                        db.save(carroFav);
+                        toast("Adicionando nos favoritos...");
+                    }
+
+                } finally {
+                    db.close();
+                }
+
+
+
             }
         });
+
         // Adiciona o Fragment com os detalhes carro
         if (savedInstanceState == null) {
             //CarroFragment frag = new CarroFragment();

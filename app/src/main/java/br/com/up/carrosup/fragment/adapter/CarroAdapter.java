@@ -40,6 +40,7 @@ public class CarroAdapter extends RecyclerView.Adapter<CarroAdapter.CarrosViewHo
         // Este método cria uma subclasse de RecyclerView.ViewHolder
         // Infla a view do layout
         View view = LayoutInflater.from(context).inflate(R.layout.adapter_carro, viewGroup, false);
+
         // Cria a classe do ViewHolder
         CarrosViewHolder holder = new CarrosViewHolder(view);
         return holder;

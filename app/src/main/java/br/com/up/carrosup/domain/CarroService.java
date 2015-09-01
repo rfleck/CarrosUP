@@ -28,7 +28,7 @@ import livroandroid.lib.utils.IOUtils;
 
 public class CarroService {
     private static final String URL_BASE = "http://livrowebservices.com.br/rest/carros";
-    private static final boolean LOG_ON = false;
+    private static final boolean LOG_ON = true;
     private static final String TAG = "CarroRest";
 
     public static List<Carro> getCarros(Context context, String tipo) throws IOException {
