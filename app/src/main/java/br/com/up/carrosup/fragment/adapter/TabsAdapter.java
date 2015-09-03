@@ -18,7 +18,7 @@ public class TabsAdapter extends android.support.v4.app.FragmentPagerAdapter {
 
     @Override
     public int getCount() {
-        return 3;
+        return 4;
     }
 
     @Override

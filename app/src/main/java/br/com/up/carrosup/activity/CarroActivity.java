@@ -26,6 +26,7 @@ public class CarroActivity extends BaseActivity {
     CollapsingToolbarLayout collapsingToolbar;
     private Carro carro;
     private ImageView appBarImg;
+    private static final String TAG = "CarroActivity";
 
     // Delegate para eventos de clique na imagem da appbar
     private ClickHeaderListener clickHeaderListener;
@@ -79,30 +80,41 @@ public class CarroActivity extends BaseActivity {
         fabButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                CarroDB db = new CarroDB(getContext());
                 Carro carroFav = carro;
                 carroFav.tipo = "favoritos";
                 int qtyCarros = 0;
-
                 toast("Carro: " + carroFav.nome.toString() + " Tipo: " + carroFav.tipo.toString());
-                try {
-                    qtyCarros = db.findCarroByNameAndType(carroFav.nome.toString(), carroFav.tipo.toString());
-                    toast("Carros encontrados no Banco: " + qtyCarros);
-                    if (qtyCarros > 0){
-                        // remove favorito
-                        db.delete(carroFav);
-                        toast("Removendo dos favoritos...");
-                    } else {
-                        // adiciona favorito
-                        db.save(carroFav);
-                        toast("Adicionando nos favoritos...");
-                    }
 
+                CarroDB dbcheck = new CarroDB(getContext());
+                try {
+                    qtyCarros = dbcheck.findCarroByNameAndType(carroFav.nome.toString(), carroFav.tipo.toString());
+                    toast("Carros encontrados no Banco: " + qtyCarros);
                 } finally {
-                    db.close();
+                    dbcheck.close();
                 }
 
+                if (qtyCarros == 0) {
+                    CarroDB dbsave = new CarroDB(getContext());
+                    try {
+                        // adiciona favorito
+                        Log.d(TAG, "Salvando o carro " + carroFav.nome + " - Tipo: " + carroFav.tipo);
+                        dbsave.save(carroFav);
+                        toast("Adicionando nos favoritos...");
+                    } finally {
+                        dbsave.close();
+                    }
 
+                } else if (qtyCarros > 0) {
+                    CarroDB dbremove = new CarroDB(getContext());
+                    try {
+                        // remove favorito
+                        dbremove.deleteByName(carroFav);
+                        toast("Removendo dos favoritos...");
+
+                    } finally {
+                        dbremove.close();
+                    }
+                }
 
             }
         });

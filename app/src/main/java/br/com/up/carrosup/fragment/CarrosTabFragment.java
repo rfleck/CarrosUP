@@ -24,6 +24,7 @@ public class CarrosTabFragment extends BaseFragment {
 
         // ViewPager
         viewPager = (ViewPager) view.findViewById(R.id.viewpager);
+
         // Adapter do ViewPager
         viewPager.setAdapter(new TabsAdapter(getContext(), getChildFragmentManager()));
 

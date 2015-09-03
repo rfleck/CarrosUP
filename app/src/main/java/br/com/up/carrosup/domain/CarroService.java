@@ -36,9 +36,24 @@ public class CarroService {
         HttpHelper http = new HttpHelper();
         String json = http.doGet(url);
         List<Carro> carros = parserJSON(context, json);
+
+        // rfleck - Chama funcao para buscar favoritos no banco e adiciona a lista criada
+        carros.addAll(getCarrosFromBanco(context, tipo));
+
         // Ou com Retrofit.
         // List<Carro> carros = Retrofit.getCarroRest().getCarros(tipo);
         return carros;
+    }
+
+    // rfleck - adicionando novamente o processo  para buscar carros no banco para suportar favoritos
+    public static List<Carro> getCarrosFromBanco(Context context, String tipo) throws IOException {
+        CarroDB db = new CarroDB(context);
+        try {
+            List<Carro> carros = db.findAllByTipo(tipo);
+            return carros;
+        } finally {
+            db.close();
+        }
     }
 
     private static List<Carro> parserJSON(Context context, String json) throws IOException {
@@ -68,8 +83,18 @@ public class CarroService {
             if (response.isOk()) {
                 throw new IOException("Erro ao excluir: " + response.getMsg());
             }
+
+            // Caso o carro a ser deletado seja um Favorito, remover tb do banco de dados
+            if(c.tipo == "favoritos") {
+                CarroDB dbremove = new CarroDB(context);
+                try {
+                    dbremove.deleteByName(c);
+
+                } finally {
+                    dbremove.close();
+                }
+            }
         }
-        // A fazer
         return true;
     }
 

@@ -41,6 +41,17 @@ public class CarroDB extends SQLiteOpenHelper {
     // Insere um novo carro, ou atualiza se já existe.
     public long save(Carro carro) {
         long id = carro.id;
+
+        Log.d(TAG, "id : " + carro.id);
+        Log.d(TAG, "nome : " + carro.nome);
+        Log.d(TAG, "desc : " + carro.desc);
+        Log.d(TAG, "url_foto : " + carro.urlFoto);
+        Log.d(TAG, "url_info : " + carro.urlInfo);
+        Log.d(TAG, "url_video : " + carro.urlVideo);
+        Log.d(TAG, "latitude : " + carro.latitude);
+        Log.d(TAG, "longitude : " + carro.longitude);
+        Log.d(TAG, "tipo : " + carro.tipo);
+
         SQLiteDatabase db = getWritableDatabase();
         try {
             ContentValues values = new ContentValues();
@@ -57,7 +68,14 @@ public class CarroDB extends SQLiteOpenHelper {
                 String[] whereArgs = new String[]{_id};
 
                 // update carro set values = ... where _id=?
-                int count = db.update("carro", values, "_id=?", whereArgs);
+                long count = db.update("carro", values, "_id=?", whereArgs);
+                Log.d(TAG, "Contagem do Update : " + count);
+                if (count == 0) {
+                    // Nao houve update, carro ainda nao existia no banco ou banco vazio, pode forcar insert...
+                    // insert into carro values (...)
+                    id = db.insert("carro", "", values);
+                    count = id;
+                }
                 return count;
             } else {
                 // insert into carro values (...)
@@ -168,8 +186,20 @@ public class CarroDB extends SQLiteOpenHelper {
         SQLiteDatabase db = getReadableDatabase();
         try {
             Cursor cursor = db.rawQuery(query, null);
-            count = cursor.getCount();
+            cursor.moveToFirst();
+            count = cursor.getInt(0);
             cursor.close();
+            return count;
+        } finally {
+            db.close();
+        }
+    }
+
+    public int deleteByName(Carro carro) {
+        SQLiteDatabase db = getWritableDatabase();
+        try {
+            int count = db.delete("carro", "nome = ? AND tipo = ?", new String[]{String.valueOf(carro.nome),String.valueOf(carro.tipo)});
+            Log.i(TAG, "Deletou [" + count + "] registro.");
             return count;
         } finally {
             db.close();

@@ -51,19 +51,6 @@ public class CarrosFragment extends BaseFragment {
     private SwipeRefreshLayout swipeLayout; // Action Bar de Contexto
     private ActionMode actionMode;
 
-
-    private BroadcastReceiver receiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, final Intent intent) {
-            String action = intent.getAction();
-            if (BroadcastUtil.ACTION_CARRO_SALVO.equals(action)) {
-                // Ao receber o broadcast, recarrega a lista.
-                listaCarros(false);
-            }
-        }
-    };
-
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -85,10 +72,12 @@ public class CarrosFragment extends BaseFragment {
         recyclerView = (RecyclerView) view.findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         recyclerView.setItemAnimator(new DefaultItemAnimator());
+
         // Swipe to Refresh
         swipeLayout = (SwipeRefreshLayout) view.findViewById(R.id.swipeToRefresh);
         swipeLayout.setOnRefreshListener(OnRefreshListener());
         swipeLayout.setColorSchemeResources(R.color.refresh_progress_1, R.color.refresh_progress_2, R.color.refresh_progress_3);
+
         // FAB
         view.findViewById(R.id.fabAddCarro).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -107,6 +96,17 @@ public class CarrosFragment extends BaseFragment {
         super.onActivityCreated(savedInstanceState);
         listaCarros(false);
     }
+
+    private BroadcastReceiver receiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, final Intent intent) {
+            String action = intent.getAction();
+            if (BroadcastUtil.ACTION_CARRO_SALVO.equals(action)) {
+                // Ao receber o broadcast, recarrega a lista.
+                listaCarros(false);
+            }
+        }
+    };
 
     private void listaCarros(final boolean refresh) {
         startTask("carros", new BaseTask<Object>() {
@@ -135,6 +135,7 @@ public class CarrosFragment extends BaseFragment {
                     // Troca de tela (detalhes do carro).
                     Intent intent = new Intent(getContext(), CarroActivity.class);
                     intent.putExtra("carro", Parcels.wrap(c));
+
                     // Transição animada
                     ImageView img = (ImageView) holder.img;
                     String key = getString(R.string.transition_key);
