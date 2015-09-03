@@ -68,7 +68,6 @@ public class CarroService {
         HttpHelper http = new HttpHelper();
         http.setContentType("application/json; charset=utf-8");
         for (Carro c : selectedCarros) {
-
             // URL para excluir o carro
             String url = URL_BASE + "/" + c.id;
             Log.d(TAG, "Delete carro: " + url);
@@ -80,19 +79,25 @@ public class CarroService {
             // Parser do JSON
             Gson gson = new Gson();
             Response response = gson.fromJson(json, Response.class);
-            if (response.isOk()) {
+            if (! response.isOk()) {
                 throw new IOException("Erro ao excluir: " + response.getMsg());
             }
 
+            // Caso o carro a sendo excluido esteja marcado como favorito, remover tb do banco de dados
+            int qtyCarros = 0;
+            Carro carroFav = c;
+            carroFav.tipo = "favoritos";
 
-
-
-            // Caso o carro a ser esteja nos favoritos, remover tb do banco de dados
-            if(c.tipo == "favoritos") {
+            CarroDB dbcheck = new CarroDB(context);
+            try {
+                qtyCarros = dbcheck.findCarroByNameAndType(carroFav.nome.toString(), carroFav.tipo.toString());
+            } finally {
+                dbcheck.close();
+            }
+            if (qtyCarros > 0) {
                 CarroDB dbremove = new CarroDB(context);
                 try {
-                    dbremove.deleteByName(c);
-
+                    dbremove.deleteByName(carroFav);
                 } finally {
                     dbremove.close();
                 }
@@ -105,6 +110,7 @@ public class CarroService {
         // Converte o carro para JSON
         String jsonCarro = new Gson().toJson(carro);
         Log.d(TAG, "> save: " + jsonCarro);
+
         HttpHelper http = new HttpHelper();
         http.setContentType("application/json; charset=utf-8");
 

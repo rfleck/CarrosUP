@@ -229,8 +229,10 @@ public class CarrosFragment extends BaseFragment {
                 @Override
                 public void updateView(Object count) {
                     super.updateView(count);
+
                     // Mostra mensagem de sucesso
                     snack(recyclerView, selectedCarros.size() + " carros excluídos com sucesso");
+
                     // Busca novamente no web service
                     //listaCarros(true);
                     // Atualiza o adapter da lista (faz usar o novo array)
