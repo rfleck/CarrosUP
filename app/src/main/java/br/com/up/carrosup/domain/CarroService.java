@@ -84,7 +84,10 @@ public class CarroService {
                 throw new IOException("Erro ao excluir: " + response.getMsg());
             }
 
-            // Caso o carro a ser deletado seja um Favorito, remover tb do banco de dados
+
+
+
+            // Caso o carro a ser esteja nos favoritos, remover tb do banco de dados
             if(c.tipo == "favoritos") {
                 CarroDB dbremove = new CarroDB(context);
                 try {
